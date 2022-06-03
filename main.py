@@ -1,5 +1,5 @@
 from pyexpat import model
-from urllib import response
+from urllib import request, response
 from fastapi import Depends, FastAPI, status, Response, HTTPException
 from src.schemas import Blog
 from src.models import blog_model
@@ -33,6 +33,7 @@ async def show_blogs(db: Session = Depends(get_db)):
 async def show_blog(id, response:Response, db: Session = Depends(get_db)):
     blog = db.query(blog_model.Blog).filter(blog_model.Blog.id == id).first()
 
+    # Alternative usage
     # if not blog:
     #     response.status_code = status.HTTP_404_NOT_FOUND
     #     return {"status":response.status_code, "message": f"Blog with the id {id} is not found!"}
@@ -41,3 +42,37 @@ async def show_blog(id, response:Response, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Blog with the id {id} is not found!")
     
     return blog
+
+
+# @app.delete("/api/v1/blogs/{id}", status_code=204)
+# async def destroy(id, db: Session = Depends(get_db)):
+#     blog = db.query(blog_model.Blog).filter(blog_model.Blog.id == id).first()
+
+#     if not blog:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Blog with the id {id} is not found!")
+#     else:
+#         db.query(blog_model.Blog).filter(blog_model.Blog.id == id).delete(synchronize_session=False)
+
+
+#     db.commit()
+#     return {"status": status.HTTP_204_NO_CONTENT, "message": "Selected blog deleted!"}
+
+
+@app.put('/api/v1/blogs/{id}', status_code=status.HTTP_202_ACCEPTED)
+async def update(id, blog:Blog, db: Session = Depends(get_db)):
+
+    try:
+        res = db.query(blog_model.Blog).filter(blog_model.Blog.id == id)
+        
+        if not res.first():
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Blog with the id {id} is not found!")
+        else:
+            db.query(blog_model.Blog).filter(blog_model.Blog.id == id).delete(synchronize_session=False)
+
+        res.update(blog)
+        db.commit()
+        return res
+    except Exception as ex:
+        print(ex)
+    
+   
