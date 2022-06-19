@@ -1,0 +1,9 @@
+version: '3.3'
+
+services:
+  blogapp:
+    container_name: blogapp
+    build:
+      context: ./blogapp/.
+    ports:
+      - 3000:8000
