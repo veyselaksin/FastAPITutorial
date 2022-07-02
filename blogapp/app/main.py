@@ -9,7 +9,7 @@ app = FastAPI()
 
 blog_model.Base.metadata.create_all(get_engine())
 
-@app.get("/api/v1/blog/unpublished")
+@app.get("/api/v1/blogs/unpublished")
 def unpublished():
     return {
         "status": 200,
@@ -45,7 +45,7 @@ def blogs(response: Response, db: Session = Depends(get_db)):
         }
 
 
-@app.get("/api/v1/blog/{id}", status_code = 200)
+@app.get("/api/v1/blogs/{id}", status_code = 200)
 def blog(response: Response, id: int, db: Session = Depends(get_db)):
 
     try:
@@ -97,7 +97,36 @@ def create_blog(response: Response, blog: blog_schema.Blog, db: Session = Depend
             "message": ex
         }
 
-@app.get("/api/v1/blog/{id}/comments")
+@app.delete('/api/v1/blogs/{id}', status_code=200)
+def delete_blog(id:int, db: Session = Depends(get_db)):
+    try:
+        blog = db.query(blog_model.Blog).filter(blog_model.Blog.id == id).first()
+
+        if blog is None:
+            return {
+                'status': 404,
+                'details': "Data not found!",
+                'data': []
+            }
+        
+        db.query(blog_model.Blog).filter(blog_model.Blog.id == id).delete(synchronize_session=False)
+        db.commit() 
+
+        return {
+            'status': 204,
+            'details': "Done",
+            'data': []
+        }
+
+    except Exception as ex:
+        return {
+            'status': 500,
+            'details': "Something went wrong!",
+            'message': ex 
+        }
+
+
+@app.get("/api/v1/blogs/{id}/comments")
 def blog_comments(id: int):
     return {
         "status": 200,
