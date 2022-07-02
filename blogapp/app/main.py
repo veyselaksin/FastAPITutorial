@@ -18,7 +18,7 @@ def unpublished():
     }
 
 
-@app.get("/api/v1/blogs", status_code = 200)
+@app.get("/api/v1/blogs", status_code = status.HTTP_200_OK)
 def blogs(response: Response, db: Session = Depends(get_db)):
     try:
         blogs = db.query(blog_model.Blog).all()
@@ -46,7 +46,7 @@ def blogs(response: Response, db: Session = Depends(get_db)):
         }
 
 
-@app.get("/api/v1/blogs/{id}", status_code = 200)
+@app.get("/api/v1/blogs/{id}", status_code = status.HTTP_200_OK)
 def blog(response: Response, id: int, db: Session = Depends(get_db)):
 
     try:
@@ -75,7 +75,7 @@ def blog(response: Response, id: int, db: Session = Depends(get_db)):
         }
 
 
-@app.post("/api/v1/blog", status_code = 201)
+@app.post("/api/v1/blog", status_code = status.HTTP_201_CREATED)
 def create_blog(response: Response, blog: blog_schema.Blog, db: Session = Depends(get_db)):
 
     new_blog = blog_model.Blog(title = blog.title, body=blog.body)
@@ -100,7 +100,7 @@ def create_blog(response: Response, blog: blog_schema.Blog, db: Session = Depend
         }
 
 
-@app.delete('/api/v1/blogs/{id}', status_code=200)
+@app.delete('/api/v1/blogs/{id}', status_code=status.HTTP_200_OK)
 def delete_blog(id:int, db: Session = Depends(get_db)):
     try:
         blog = db.query(blog_model.Blog).filter(blog_model.Blog.id == id).first()
