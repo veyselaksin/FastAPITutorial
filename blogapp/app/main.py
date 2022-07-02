@@ -1,4 +1,3 @@
-from os import stat
 from fastapi import FastAPI, Depends, Response, status
 from .models import blog_model
 from .schemas import blog_schema
@@ -9,6 +8,7 @@ app = FastAPI()
 
 blog_model.Base.metadata.create_all(get_engine())
 
+
 @app.get("/api/v1/blogs/unpublished")
 def unpublished():
     return {
@@ -16,6 +16,7 @@ def unpublished():
         "details": "OK",
         "data": "all unpublished blogs"
     }
+
 
 @app.get("/api/v1/blogs", status_code = 200)
 def blogs(response: Response, db: Session = Depends(get_db)):
@@ -73,6 +74,7 @@ def blog(response: Response, id: int, db: Session = Depends(get_db)):
             "message": ex
         }
 
+
 @app.post("/api/v1/blog", status_code = 201)
 def create_blog(response: Response, blog: blog_schema.Blog, db: Session = Depends(get_db)):
 
@@ -97,6 +99,7 @@ def create_blog(response: Response, blog: blog_schema.Blog, db: Session = Depend
             "message": ex
         }
 
+
 @app.delete('/api/v1/blogs/{id}', status_code=200)
 def delete_blog(id:int, db: Session = Depends(get_db)):
     try:
@@ -118,6 +121,35 @@ def delete_blog(id:int, db: Session = Depends(get_db)):
             'data': []
         }
 
+    except Exception as ex:
+        return {
+            'status': 500,
+            'details': "Something went wrong!",
+            'message': ex 
+        }
+
+
+@app.put("/api/v1/blogs/{id}", status_code=status.HTTP_202_ACCEPTED)
+def update_blog(id: int, request: blog_schema.Blog, db: Session = Depends(get_db)):
+    try:
+        blog = db.query(blog_model.Blog).filter(blog_model.Blog.id == id).first()
+
+        if blog is None:
+            return{
+                'status': 404,
+                'details': "Data not found!",
+                'data': []
+            }
+
+        db.query(blog_model.Blog).filter(blog_model.Blog.id == id).update(request.dict(), synchronize_session=False)
+        db.commit()
+
+        return {
+            'status': 200,
+            'details': "OK",
+            'data': [] 
+        }
+    
     except Exception as ex:
         return {
             'status': 500,
