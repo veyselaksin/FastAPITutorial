@@ -1,12 +1,14 @@
+import email
 from fastapi import FastAPI, Depends, Response, status
-from .models import blog_model
-from .schemas import blog_schema
+from .models import blog_model, user_model
+from .schemas import blog_schema, user_schema
 from .utils.database import get_engine, get_db
 from sqlalchemy.orm import Session
 
 app = FastAPI()
 
 blog_model.Base.metadata.create_all(get_engine())
+user_model.Base.metadata.create_all(get_engine())
 
 
 @app.get("/api/v1/blogs/unpublished")
@@ -156,6 +158,28 @@ def update_blog(id: int, request: blog_schema.Blog, db: Session = Depends(get_db
             'details': "Something went wrong!",
             'message': ex 
         }
+
+
+@app.post("/api/v1/register")
+def create_user(request: user_schema.User, db: Session = Depends(get_db)):
+    try:
+        new_user = user_model.User(name = request.name, email = request.email, password = request.password)
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+
+        return{
+            'status': 200,
+            'details': "OK",
+            'message': f"User created as name {new_user.name}"
+        }
+
+    except Exception as ex:
+        return {
+            'status': 500,
+            'details': "Something went wrong!",
+            'message': "User not created!"
+        } 
 
 
 @app.get("/api/v1/blogs/{id}/comments")
