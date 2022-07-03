@@ -30,7 +30,7 @@ def blogs(response: Response, db: Session = Depends(get_db)):
                 "details": "OK",
                 "message": "Data not found!"
             }
-
+    
         return {
             "status": response.status_code,
             "details": "OK",
