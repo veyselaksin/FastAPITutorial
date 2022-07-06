@@ -4,6 +4,10 @@ from .models import blog_model, user_model
 from .schemas import blog_schema, user_schema
 from .utils.database import get_engine, get_db
 from sqlalchemy.orm import Session
+from .utils.helper import (
+    password_context,
+    Hash
+)
 
 app = FastAPI()
 
@@ -163,7 +167,7 @@ def update_blog(id: int, request: blog_schema.Blog, db: Session = Depends(get_db
 @app.post("/api/v1/register")
 def create_user(request: user_schema.User, db: Session = Depends(get_db)):
     try:
-        new_user = user_model.User(name = request.name, email = request.email, password = request.password)
+        new_user = user_model.User(name = request.name, email = request.email, password = Hash.bcrypt(request.password))
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
