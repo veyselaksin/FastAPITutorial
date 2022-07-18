@@ -1,4 +1,3 @@
-import email
 from fastapi import FastAPI, Depends, Response, status
 from .models import blog_model, user_model
 from .schemas import blog_schema, user_schema
@@ -24,7 +23,7 @@ def unpublished():
     }
 
 
-@app.get("/api/v1/blogs", status_code = status.HTTP_200_OK)
+@app.get("/api/v1/blogs", status_code = status.HTTP_200_OK, tags=["blogs"])
 def blogs(response: Response, db: Session = Depends(get_db)):
     try:
         blogs = db.query(blog_model.Blog).all()
@@ -52,7 +51,7 @@ def blogs(response: Response, db: Session = Depends(get_db)):
         }
 
 
-@app.get("/api/v1/blogs/{id}", status_code = status.HTTP_200_OK)
+@app.get("/api/v1/blogs/{id}", status_code = status.HTTP_200_OK, tags=["blogs"])
 def blog(response: Response, id: int, db: Session = Depends(get_db)):
 
     try:
@@ -81,7 +80,7 @@ def blog(response: Response, id: int, db: Session = Depends(get_db)):
         }
 
 
-@app.post("/api/v1/blog", status_code = status.HTTP_201_CREATED)
+@app.post("/api/v1/blog", status_code = status.HTTP_201_CREATED, tags=["blogs"])
 def create_blog(response: Response, blog: blog_schema.Blog, db: Session = Depends(get_db)):
 
     new_blog = blog_model.Blog(title = blog.title, body=blog.body)
@@ -106,7 +105,7 @@ def create_blog(response: Response, blog: blog_schema.Blog, db: Session = Depend
         }
 
 
-@app.delete('/api/v1/blogs/{id}', status_code=status.HTTP_200_OK)
+@app.delete('/api/v1/blogs/{id}', status_code=status.HTTP_200_OK, tags=["blogs"])
 def delete_blog(id:int, db: Session = Depends(get_db)):
     try:
         blog = db.query(blog_model.Blog).filter(blog_model.Blog.id == id).first()
@@ -135,7 +134,7 @@ def delete_blog(id:int, db: Session = Depends(get_db)):
         }
 
 
-@app.put("/api/v1/blogs/{id}", status_code=status.HTTP_202_ACCEPTED)
+@app.put("/api/v1/blogs/{id}", status_code=status.HTTP_202_ACCEPTED, tags=["blogs"])
 def update_blog(id: int, request: blog_schema.Blog, db: Session = Depends(get_db)):
     try:
         blog = db.query(blog_model.Blog).filter(blog_model.Blog.id == id).first()
@@ -164,7 +163,7 @@ def update_blog(id: int, request: blog_schema.Blog, db: Session = Depends(get_db
         }
 
 
-@app.post("/api/v1/register")
+@app.post("/api/v1/register", tags=["users"])
 def create_user(request: user_schema.User, db: Session = Depends(get_db)):
     try:
         new_user = user_model.User(name = request.name, email = request.email, password = Hash.bcrypt(request.password))
@@ -186,7 +185,35 @@ def create_user(request: user_schema.User, db: Session = Depends(get_db)):
         } 
 
 
-@app.get("/api/v1/blogs/{id}/comments")
+@app.get("/api/v1/users/{id}", tags=["users"])
+def user(id: int, db: Session = Depends(get_db)):
+    try:
+        user = db.query(user_model.User).filter(user_model.User.id == id).first()
+
+        if user is None:
+            return {
+                'status': 404,
+                'details': "Not found!",
+                'message': "User not found!"
+            }
+
+        response_user = user_schema.ShowUser.from_orm(user)
+        
+        return {
+            'status': 200,
+            'details': "OK",
+            'message': "",
+            'data': response_user
+        }
+    except Exception as ex:
+        return {
+            'status': 500,
+            'details': "Something went wrong!",
+            'message': "Error"
+        }
+
+
+@app.get("/api/v1/blogs/{id}/comments", tags=["blogs"])
 def blog_comments(id: int):
     return {
         "status": 200,
