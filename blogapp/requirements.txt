@@ -6,3 +6,4 @@ psycopg2>=2.9<2.9.3
 python-dotenv>=0.17.0<0.20.0
 passlib>=1.6<1.7.4
 bcrypt>=3.0.0<3.2.2
+python-jose>=3.0.0<3.3.0

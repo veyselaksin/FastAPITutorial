@@ -6,9 +6,11 @@ from ..utils.database import get_db
 from sqlalchemy.orm import Session
 from ..utils.helper import delete_dict_item
 
-router = APIRouter()
+router = APIRouter(
+    tags=["Blogs"]
+)
 
-@router.get("/api/v1/blogs/unpublished")
+@router.get("api/v1/blogs/unpublished")
 def unpublished():
     return {
         "status": 200,
@@ -17,7 +19,7 @@ def unpublished():
     }
 
 
-@router.get("/api/v1/blogs", status_code = status.HTTP_200_OK, tags=["blogs"])
+@router.get("/api/v1/blogs", status_code = status.HTTP_200_OK)
 def blogs(response: Response, db: Session = Depends(get_db)):
     try:
         blogs = db.query(blog_model.Blog).all()
@@ -44,7 +46,7 @@ def blogs(response: Response, db: Session = Depends(get_db)):
             "message": ex
         }
 
-@router.get("/api/v1/blogs/{id}", status_code = status.HTTP_200_OK, tags=["blogs"])
+@router.get("/api/v1/blogs/{id}", status_code = status.HTTP_200_OK)
 def blog(response: Response, id: int, db: Session = Depends(get_db)):
 
     try:
@@ -78,7 +80,7 @@ def blog(response: Response, id: int, db: Session = Depends(get_db)):
         }
 
 
-@router.post("/api/v1/blog", status_code = status.HTTP_201_CREATED, tags=["blogs"])
+@router.post("/api/v1/blog", status_code = status.HTTP_201_CREATED)
 def create_blog(response: Response, blog: blog_schema.Blog, db: Session = Depends(get_db)):
 
     new_blog = blog_model.Blog(title = blog.title, body=blog.body, user_id=18)
@@ -104,7 +106,7 @@ def create_blog(response: Response, blog: blog_schema.Blog, db: Session = Depend
         }
 
 
-@router.delete('/api/v1/blogs/{id}', status_code=status.HTTP_200_OK, tags=["blogs"])
+@router.delete('/api/v1/blogs/{id}', status_code=status.HTTP_200_OK)
 def delete_blog(id:int, db: Session = Depends(get_db)):
     try:
         blog = db.query(blog_model.Blog).filter(blog_model.Blog.id == id).first()
@@ -133,7 +135,7 @@ def delete_blog(id:int, db: Session = Depends(get_db)):
         }
 
 
-@router.put("/api/v1/blogs/{id}", status_code=status.HTTP_202_ACCEPTED, tags=["blogs"])
+@router.put("/api/v1/blogs/{id}", status_code=status.HTTP_202_ACCEPTED)
 def update_blog(id: int, request: blog_schema.Blog, db: Session = Depends(get_db)):
     try:
         blog = db.query(blog_model.Blog).filter(blog_model.Blog.id == id).first()
@@ -161,6 +163,6 @@ def update_blog(id: int, request: blog_schema.Blog, db: Session = Depends(get_db
             'message': ex 
         }
 
-@router.get("/api/v1/blogs/{id}/comments", tags=["blogs"])
+@router.get("/api/v1/blogs/{id}/comments")
 def blog_comments(id: int):
     return {"status": 200, "details": "OK", "data": f"comments for blog {id}"}
