@@ -3,11 +3,13 @@ from ..models import user_model
 from ..schemas import user_schema
 from ..utils.database import get_db
 from sqlalchemy.orm import Session
-from ..utils.helper import Hash
+from ..utils.hashing import Hash
 
-router = APIRouter()
+router = APIRouter(
+    tags=["Users"]
+)
 
-@router.post("/api/v1/register", tags=["users"])
+@router.post("/api/v1/register")
 def create_user(request: user_schema.User, db: Session = Depends(get_db)):
     try:
         new_user = user_model.User(name=request.name,
@@ -31,7 +33,7 @@ def create_user(request: user_schema.User, db: Session = Depends(get_db)):
         }
 
 
-@router.get("/api/v1/users/{id}", tags=["users"])
+@router.get("/api/v1/users/{id}")
 def user(id: int, db: Session = Depends(get_db)):
     try:
         user = db.query(
