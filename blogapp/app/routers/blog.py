@@ -1,10 +1,11 @@
 from fastapi import APIRouter
 from fastapi import Depends, Response, status
 from ..models import blog_model
-from ..schemas import blog_schema
+from ..schemas import blog_schema, user_schema
 from ..utils.database import get_db
 from sqlalchemy.orm import Session
 from ..utils.helper import delete_dict_item
+from ..utils import oauth2
 
 router = APIRouter(
     tags=["Blogs"]
@@ -20,7 +21,7 @@ def unpublished():
 
 
 @router.get("/api/v1/blogs", status_code = status.HTTP_200_OK)
-def blogs(response: Response, db: Session = Depends(get_db)):
+def blogs(response: Response, db: Session = Depends(get_db), get_current_user: user_schema.User = Depends(oauth2.get_current_user)):
     try:
         blogs = db.query(blog_model.Blog).all()
 
